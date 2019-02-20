@@ -1,0 +1,133 @@
+<!doctype html>
+
+<head>
+	<title>Symbols</title>
+
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width">
+
+	<script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+	<script>
+	if (!String.prototype.format) {
+		String.prototype.format = function() {
+			var args = arguments;
+			return this.replace(/{(\d+)}/g, function(match, number) { 
+				return typeof args[number] != 'undefined'
+				? args[number]
+				: match;
+			});
+		};
+	}
+	</script>
+    <script src="grid-data.js" type="text/javascript"></script>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+        }
+
+        table {
+            border-collapse: collapse;
+            border-spacing: 0;
+            background-color: #4b0082;
+        }
+
+        #board {
+            padding: 0px;
+            margin: 0 auto;
+            border: 2px solid #181818;
+        }
+
+        #board tr td {
+            width: 80px;
+            height: 80px;
+            vertical-align: center;
+            horiz-align: center;
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body onload="bodyOnLoad()">
+	<script>
+	var state = [];
+	
+	function textBehaviour(x, y) {
+		var stringIndex = 'cell_{0}_{1}'.format(x, y);
+        if(options[stringIndex] == undefined) return;
+
+		var start_delay = options[stringIndex]['effect']['start_delay'];
+		var time_in = options[stringIndex]['effect']['time_in'];
+		var delay_in = options[stringIndex]['effect']['delay_in'];
+		var time_out = options[stringIndex]['effect']['time_out'];
+		var delay_out = options[stringIndex]['effect']['delay_out'];
+		
+		if(state[stringIndex] == false) {
+			state[stringIndex] = true;
+
+			$('#' + stringIndex).hide()
+				.delay(start_delay)
+				.fadeIn(time_in)
+				.delay(delay_in)
+				.fadeOut(time_out)
+				.delay(delay_out)
+				.queue(function() {
+                    $('#' + stringIndex).clearQueue();
+					textBehaviour(x, y);
+				});
+		} else {
+			$('#' + stringIndex)
+				.fadeIn(time_in)
+				.delay(delay_in)
+				.fadeOut(time_out)
+				.delay(delay_out)
+				.queue(function() {
+                    $('#' + stringIndex).clearQueue();
+					textBehaviour(x, y);
+				});
+		}
+	}
+	
+	function init() {
+        for(var y = 0; y < 8; y++) {
+            var column = '';
+            for(var x = 0; x < 8; x++) {
+                var stringIndex = 'cell_{0}_{1}'.format(x, y);
+                column += '<td><div id="{0}"></div></td>'.format(stringIndex);
+            }
+            $('#board').append('<tr>' + column + '</tr>');
+        }
+
+		for(var x = 0; x < 8; x++) {
+			for(var y = 0; y < 8; y++) {
+                var stringIndex = 'cell_{0}_{1}'.format(x, y);
+
+			    if(options[stringIndex] == undefined) continue;
+
+                $('#' + stringIndex).text(options[stringIndex]['text']);
+
+                $('#' + stringIndex).css('font-size', options[stringIndex]['size']);
+                $('#' + stringIndex).css('color', options[stringIndex]['color']);
+                $('#' + stringIndex).css('font-family', options[stringIndex]['font']);
+
+				state[stringIndex] = false;
+			}
+		}
+	}
+	
+	function bodyOnLoad() {
+		init();
+
+        for(var x = 0; x < 8; x++) {
+            for(var y = 0; y < 8; y++) {
+                textBehaviour(x, y);
+            }
+        }
+	}
+	</script>
+
+    <table id="board"></table>
+</body>
+
+</html>
